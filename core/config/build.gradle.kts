@@ -71,6 +71,7 @@ android {
     productFlavors {
         create("full") {
             dimension = "capabilities"
+            buildConfigField("Boolean", "ENABLE_LITE_TOOLSET", "false")
             buildConfigField("Boolean", "ENABLE_ML_KIT_HANDWRITING", "true")
             buildConfigField("Boolean", "ENABLE_ML_KIT_SCANNERS", "true")
             buildConfigField("Boolean", "ENABLE_GRAMMAR", "true")
@@ -79,6 +80,7 @@ android {
         }
         create("lite") {
             dimension = "capabilities"
+            buildConfigField("Boolean", "ENABLE_LITE_TOOLSET", "true")
             buildConfigField("Boolean", "ENABLE_ML_KIT_HANDWRITING", "false")
             buildConfigField("Boolean", "ENABLE_ML_KIT_SCANNERS", "false")
             buildConfigField("Boolean", "ENABLE_GRAMMAR", "false")

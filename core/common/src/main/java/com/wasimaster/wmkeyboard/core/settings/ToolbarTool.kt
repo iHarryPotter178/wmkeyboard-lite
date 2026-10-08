@@ -97,6 +97,38 @@ enum class ToolbarTool {
     STATISTICS,
 }
 
+/**
+ * Tools shipped by the lite edition. The enum remains shared with the full
+ * edition so saved settings and deep links remain backwards compatible, but
+ * unsupported entries are filtered from the lite UI and persisted settings.
+ */
+val LiteToolset: Set<ToolbarTool> = setOf(
+    ToolbarTool.EMOJI,
+    ToolbarTool.CLIPBOARD,
+    ToolbarTool.SNIPPETS,
+    ToolbarTool.NUMPAD,
+    ToolbarTool.LEARN_FROM_TEXT,
+    ToolbarTool.APP_LAUNCHER,
+    ToolbarTool.CALCULATOR,
+    ToolbarTool.TYPING_TEST,
+    ToolbarTool.MODES,
+    ToolbarTool.ONE_HANDED,
+    ToolbarTool.FLOATING,
+    ToolbarTool.RESIZE,
+    ToolbarTool.FANCY,
+    ToolbarTool.INCOGNITO,
+    ToolbarTool.THEMES,
+    ToolbarTool.POWER_SAVING,
+    ToolbarTool.SETTINGS,
+    ToolbarTool.STATISTICS,
+    ToolbarTool.CALENDAR,
+    ToolbarTool.PLUGINS,
+)
+
+/** The tools available to this build, in the stable enum order. */
+fun supportedTools(): List<ToolbarTool> =
+    ToolbarTool.entries.filter(::isSupportedTool)
+
 /** The cursor tools, in the order they read on the toolbar. */
 val CursorTools: List<ToolbarTool> = listOf(
     ToolbarTool.CURSOR_LEFT, ToolbarTool.CURSOR_RIGHT,
@@ -205,6 +237,7 @@ fun toolOpensScreen(tool: ToolbarTool): Boolean = when (tool) {
 }
 
 fun isSupportedTool(tool: ToolbarTool): Boolean = when {
+    BuildConfig.ENABLE_LITE_TOOLSET && tool !in LiteToolset -> false
     !BuildConfig.ENABLE_ML_KIT_HANDWRITING && tool == ToolbarTool.HANDWRITING -> false
     !BuildConfig.ENABLE_ML_KIT_SCANNERS && tool in setOf(
         ToolbarTool.OCR, ToolbarTool.QR_SCAN, ToolbarTool.DOC_SCAN
@@ -305,7 +338,8 @@ private val RestOfToolOrder: List<ToolbarTool> = listOf(
 private val RankedToolOrder: List<ToolbarTool> = (PowerTools + RestOfToolOrder).toList()
 
 val DefaultToolOrder: List<ToolbarTool> =
-    RankedToolOrder + (ToolbarTool.entries - RankedToolOrder.toSet())
+    (RankedToolOrder + (ToolbarTool.entries - RankedToolOrder.toSet()))
+        .filter(::isSupportedTool)
 
 /**
  * How many pages [count] tools fill at [pageSize] each. Always at least one:
@@ -368,4 +402,3 @@ val LargeTabletToolbarTools: List<ToolbarTool> = listOf(
  * and makes any luminance-contrast failure in a theme immediately visible.
  */
 enum class ColorVisionFilter { NONE, DEUTERANOPIA, PROTANOPIA, TRITANOPIA, GRAYSCALE }
-
