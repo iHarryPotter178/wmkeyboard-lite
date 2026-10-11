@@ -3133,12 +3133,11 @@ data class KeyboardSettings(
     /** Emoji options that didn't fit the flat field list (see [EmojiSettings]). */
     val emoji: EmojiSettings = EmojiSettings(),
     /** Tools available anywhere on the keyboard; disabled tools are hidden. */
-    val enabledTools: List<ToolbarTool> = ToolbarTool.entries.toList(),
+    val enabledTools: List<ToolbarTool> = supportedTools(),
     /**
-     * Every tool's position in the toolbox grid, most-used-first by default;
-     * the user rearranges it by dragging tools around the toolbox. Always a
-     * complete ordering over all tools — pinned/disabled ones keep their
-     * rank so they come back where they belong.
+     * Every supported tool's position in the toolbox grid, most-used-first by
+     * default; the user rearranges it by dragging tools around the toolbox.
+     * Pinned/disabled ones keep their rank so they come back where they belong.
      */
     val toolboxOrder: List<ToolbarTool> = DefaultToolOrder,
     /** The toolbox drag hint was dismissed; after that it only rarely reappears. */
@@ -9700,7 +9699,7 @@ class SettingsRepository(private val context: Context) {
                 ?.let { runCatching { EmojiInsertMode.valueOf(it) }.getOrNull() }
                 ?: defaults.emojiInsertMode,
             emoji = readEmoji(p, defaults),
-            enabledTools = ToolbarTool.entries - decodeDisabledTools(p[DISABLED_TOOLS]),
+            enabledTools = supportedTools() - decodeDisabledTools(p[DISABLED_TOOLS]),
             toolboxOrder = decodeToolOrder(p[TOOLBOX_ORDER]),
             toolboxHintDismissed = p[TOOLBOX_HINT_DISMISSED] ?: defaults.toolboxHintDismissed,
             toolbox = readToolbox(p, defaults),
@@ -11377,7 +11376,7 @@ class SettingsRepository(private val context: Context) {
     suspend fun setEnabledTools(enabled: Collection<ToolbarTool>) =
         editPrefs { prefs ->
             prefs[DISABLED_TOOLS] =
-                (ToolbarTool.entries - enabled.toSet()).joinToString(",") { it.name }
+                (supportedTools() - enabled.toSet()).joinToString(",") { it.name }
         }
 
     suspend fun setToolboxOrder(order: List<ToolbarTool>) =
@@ -11421,14 +11420,15 @@ class SettingsRepository(private val context: Context) {
     private fun decodeToolOrder(csv: String?): List<ToolbarTool> {
         val stored = csv?.split(',')
             ?.mapNotNull { runCatching { ToolbarTool.valueOf(it) }.getOrNull() }
+            ?.filter(::isSupportedTool)
             ?.distinct()
             .orEmpty()
-        if (stored.isEmpty()) return DefaultToolOrder
+        if (stored.isEmpty()) return DefaultToolOrder.filter(::isSupportedTool)
         val storedSet = stored.toSet()
         val result = stored.toMutableList()
         // Walk the default order so multiple new tools keep their relative rank;
         // each anchors after the last already-placed tool that outranks it.
-        for (tool in DefaultToolOrder) {
+        for (tool in DefaultToolOrder.filter(::isSupportedTool)) {
             if (tool in storedSet) continue
             val rank = DefaultToolOrder.indexOf(tool)
             val anchor = DefaultToolOrder.take(rank).lastOrNull { it in result }

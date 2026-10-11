@@ -2266,14 +2266,19 @@ internal fun KeyLayoutEditorScreen(
         }
         // Issue #588: this layer's flick arms, over the keyboard-wide switch.
         // Only on a layer that has flick keys to draw them on.
-        item(visible = edited.watch { it.layer(layer)?.rows.orEmpty().any { row -> row.any { k -> k.hasFlicks() } } }) {
-            val global = settings.watch { it.layoutBehavior.flickHints }
-            ToggleSetting(
-                R.string.layout_editor_flick_hints_title,
-                stringResource(R.string.layout_editor_flick_hints_subtitle),
-                edited.watch { it.layer(layer)?.flickHints } ?: global,
-                info = stringResource(R.string.layout_editor_flick_hints_info),
-            ) { on -> editLayer { it.copy(flickHints = on.takeIf { value -> value != global }) } }
+        item {
+            val flickHintsVisible = edited.watch {
+                it.layer(layer)?.rows.orEmpty().any { row -> row.any { k -> k.hasFlicks() } }
+            }
+            if (flickHintsVisible) {
+                val global = settings.watch { it.layoutBehavior.flickHints }
+                ToggleSetting(
+                    R.string.layout_editor_flick_hints_title,
+                    stringResource(R.string.layout_editor_flick_hints_subtitle),
+                    edited.watch { it.layer(layer)?.flickHints } ?: global,
+                    info = stringResource(R.string.layout_editor_flick_hints_info),
+                ) { on -> editLayer { it.copy(flickHints = on.takeIf { value -> value != global }) } }
+            }
         }
         // Issue #61 again, one layer down: a symbols page in its own colours.
         // Not on a secondary layout, whose one grid is the layout.

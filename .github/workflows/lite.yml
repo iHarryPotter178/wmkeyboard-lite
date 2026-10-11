@@ -1,0 +1,63 @@
+name: Lite offline build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - 'core/**'
+      - 'feature/**'
+      - 'gradle/**'
+      - '*.gradle.kts'
+      - 'settings.gradle.kts'
+      - '.github/workflows/lite.yml'
+  pull_request:
+    paths:
+      - 'app/**'
+      - 'core/**'
+      - 'feature/**'
+      - 'gradle/**'
+      - '*.gradle.kts'
+      - 'settings.gradle.kts'
+      - '.github/workflows/lite.yml'
+
+concurrency:
+  group: lite-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  WMKB_ENABLE_PLAY_STORE: "false"
+  WMKB_ENABLE_GMS: "false"
+  WMKB_NO_INTERNET: "true"
+  GRADLE_OPTS: -Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false
+
+jobs:
+  build:
+    name: Build lite offline APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Run lite unit tests
+        run: ./gradlew :app:testLiteEnDebugUnitTest --stacktrace
+
+      - name: Assemble lite APK without internet permission
+        run: ./gradlew :app:assembleLiteEnRelease -Pwmkb.noInternet=true --stacktrace
+
+      - name: Upload lite APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: wmkeyboard-lite-offline
+          path: app/build/outputs/apk/liteEn/release/*.apk
+          retention-days: 14
