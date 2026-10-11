@@ -3,7 +3,7 @@ name: Lite offline build
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, 'copilot/**']
     paths:
       - 'app/**'
       - 'core/**'
