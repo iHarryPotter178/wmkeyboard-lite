@@ -493,13 +493,9 @@ class SnyggParityTest {
         assertEquals(0xFF0B1220, t.toolCircleActiveIcon)
     }
 
-    /**
-     * A section heading is not secondary text. Several themes paint theirs in
-     * the accent colour, and folding it in tinted every suggestion's second
-     * line with it.
-     */
+    /** The actions editor subheader is one of the panel notice body texts. */
     @Test
-    fun `a section heading is not read as secondary text`() {
+    fun `an actions editor subheader is read as secondary text`() {
         val t = theme(
             """
             {
@@ -509,7 +505,7 @@ class SnyggParityTest {
             }
             """,
         )
-        assertNull(t.secondaryText)
+        assertEquals(0xFFFF9800, t.secondaryText)
     }
 
     /**

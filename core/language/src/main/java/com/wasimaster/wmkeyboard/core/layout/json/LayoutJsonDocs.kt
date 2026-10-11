@@ -62,6 +62,8 @@ object LayoutJsonDocs {
         "LayoutSpec.secondary" to
             "A grid that a key or the Secondary layout tool opens, not a language: a symbols page of your own, or a macro pad. Only its " +
             "letters layer is used.",
+        "LayoutSpec.handwriting" to
+            "Marks this layout as a handwriting canvas for its language. Turn it on only for a handwriting layout; normal key grids leave it off.",
         "LayoutSpec.themeId" to "A theme of this layout's own, used while the layout is on screen. A layer's themeId beats it.",
         "LayoutSpec.version" to "The revision of the layout format. The app brings an older one up to date when it reads it.",
 
